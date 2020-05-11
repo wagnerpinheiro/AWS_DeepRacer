@@ -19,8 +19,8 @@ class RewardEvaluator:
     # parameters you are going to use for the Action space. Set MAX_SPEED equal to maximum speed defined there,
     # MIN_SPEED should be lower (just a bit) then expected minimum defined speed (e.g. Max speed set to 5 m/s,
     # speed granularity 3 => therefore, MIN_SPEED should be less than 1.66 m/s.
-    MAX_SPEED = float(5.0)
-    MIN_SPEED = float(1.5)
+    MAX_SPEED = float(4.0)
+    MIN_SPEED = float(1.33)
 
     # Define maximum steering angle according to the Action space settings. Smooth steering angle threshold is used to
     # set a steering angle still considered as "smooth". The value must be higher than minimum steering angle determined
@@ -32,7 +32,7 @@ class RewardEvaluator:
     # Constant value used to "ignore" turns in the corresponding distance (in meters). The car is supposed to drive
     # at MAX_SPEED (getting a higher reward). In case within the distance is a turn, the car is rewarded when slowing
     # down.
-    SAFE_HORIZON_DISTANCE = 0.8  # meters, able to fully stop. See ANGLE_IS_CURVE.
+    SAFE_HORIZON_DISTANCE = 0.01  # meters, able to fully stop. See ANGLE_IS_CURVE.
 
     # Constant to define accepted distance of the car from the center line.
     CENTERLINE_FOLLOW_RATIO_TRESHOLD = 0.12
@@ -68,6 +68,13 @@ class RewardEvaluator:
     nearest_previous_waypoint_ind = None
     nearest_next_waypoint_ind = None
 
+    # Parameters for heard to head
+
+    objects_distance = None
+    closest_objects = None
+    objects_left_of_center = None
+    is_left_of_center = None
+
     log_message = ""
 
     # method used to extract class properties (status values) from input "params"
@@ -88,6 +95,10 @@ class RewardEvaluator:
         self.closest_waypoints = params['closest_waypoints']
         self.nearest_previous_waypoint_ind = params['closest_waypoints'][0]
         self.nearest_next_waypoint_ind = params['closest_waypoints'][1]
+        self.objects_distance = params['objects_distance']
+        _, self.next_object_index = params['closest_objects']
+        self.objects_left_of_center = params['objects_left_of_center']
+        self.is_left_of_center = params['is_left_of_center']
 
     # RewardEvaluator Class constructor
     def __init__(self, params):
@@ -193,6 +204,24 @@ class RewardEvaluator:
             return True
         else:
             return False
+    
+    def get_object_distances_reward(self):
+        # Distance to the next object
+        distance_closest_object = self.objects_distance[self.next_object_index]
+        # Decide if the agent and the next object is on the same lane
+        is_same_lane = self.objects_left_of_center[self.next_object_index] == self.is_left_of_center
+
+        reward_avoid = 1.0
+
+        if is_same_lane:
+            if 0.5 <= distance_closest_object < 0.8: 
+                reward_avoid *= 0.5
+            elif 0.3 <= distance_closest_object < 0.5:
+                reward_avoid *= 0.2
+            elif distance_closest_object < 0.3:
+                reward_avoid = 1e-3 # Likely crashed
+
+        return reward_avoid
 
     # Provides direction of the next turn in order to let you reward right position to the center line (before the left
     # turn position of the car sligthly right can be rewarded (and vice versa) - see is_in_optimized_corridor()
@@ -315,6 +344,9 @@ class RewardEvaluator:
         except Exception as e:
             print("Error : " + str(e))
             print(traceback.format_exc())
+
+
+        result_reward = result_reward * self.get_object_distances_reward()
 
         # Finally - check reward value does not exceed maximum value
         if result_reward > 900000:
