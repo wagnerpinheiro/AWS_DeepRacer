@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import math
-import traceback
+# import traceback
 
 """
 This is the source code you cut and paste into AWS console. It consists of RewardEvaluator class that is instantiated
@@ -51,54 +51,49 @@ class RewardEvaluator:
     params = None
 
     # Class properties - status values extracted from "params" input
-    all_wheels_on_track = None
-    x = None
-    y = None
-    distance_from_center = None
-    is_left_of_center = None
-    is_reversed = None
-    heading = None
-    progress = None
-    steps = None
-    speed = None
-    steering_angle = None
-    track_width = None
-    waypoints = None
-    closest_waypoints = None
+    # reference: https://docs.aws.amazon.com/deepracer/latest/developerguide/deepracer-reward-function-input.html
+
+    all_wheels_on_track = None # Boolean,        # flag to indicate if the agent is on the track
+    x = None # float,                            # agent's x-coordinate in meters
+    y = None # float,                            # agent's y-coordinate in meters
+    closest_objects = None # [int, int],         # zero-based indices of the two closest objects to the agent's current position of (x, y).
+    closest_waypoints = None # [int, int],       # indices of the two nearest waypoints.
+    distance_from_center = None # float,         # distance in meters from the track center 
+    is_crashed = None # Boolean,                 # Boolean flag to indicate whether the agent has crashed.
+    is_left_of_center = None # Boolean,          # Flag to indicate if the agent is on the left side to the track center or not. 
+    is_offtrack = None # Boolean,                # Boolean flag to indicate whether the agent has gone off track.
+    is_reversed = None # Boolean,                # flag to indicate if the agent is driving clockwise (True) or counter clockwise (False).
+    heading = None # float,                      # agent's yaw in degrees
+    objects_distance = None # [float, ],         # list of the objects' distances in meters between 0 and track_length in relation to the starting line.
+    objects_heading = None # [float, ],          # list of the objects' headings in degrees between -180 and 180.
+    objects_left_of_center = None # [Boolean, ], # list of Boolean flags indicating whether elements' objects are left of the center (True) or not (False).
+    objects_location = None # [(float, float),], # list of object locations [(x,y), ...].
+    objects_speed = None # [float, ],            # list of the objects' speeds in meters per second.
+    progress = None # float,                     # percentage of track completed
+    speed = None # float,                        # agent's speed in meters per second (m/s)
+    steering_angle = None # float,               # agent's steering angle in degrees
+    steps = None # int,                          # number steps completed
+    track_length = None # float,                 # track length in meters.
+    track_width = None # float,                  # width of the track
+    waypoints = None # [(float, float), ]        # list of (x,y) as milestones along the track center
+
+    # aditional parameters
+
+    next_object_index = None
     nearest_previous_waypoint_ind = None
     nearest_next_waypoint_ind = None
 
-    # Parameters for heard to head
-
-    objects_distance = None
-    closest_objects = None
-    objects_left_of_center = None
-    is_left_of_center = None
-
     log_message = ""
 
-    # method used to extract class properties (status values) from input "params"
+    # method used to extract class properties (status values) from input "params"    
     def init_self(self, params):
-        self.all_wheels_on_track = params['all_wheels_on_track']
-        self.x = params['x']
-        self.y = params['y']
-        self.distance_from_center = params['distance_from_center']
-        self.is_left_of_center = params['is_left_of_center']
-        self.is_reversed = params['is_reversed']
-        self.heading = params['heading']
-        self.progress = params['progress']
-        self.steps = params['steps']
-        self.speed = params['speed']
-        self.steering_angle = params['steering_angle']
-        self.track_width = params['track_width']
-        self.waypoints = params['waypoints']
-        self.closest_waypoints = params['closest_waypoints']
+        
+        for key, value in params.items():
+            setattr(self, key, value)
+
+        _, self.next_object_index = params['closest_objects']
         self.nearest_previous_waypoint_ind = params['closest_waypoints'][0]
         self.nearest_next_waypoint_ind = params['closest_waypoints'][1]
-        self.objects_distance = params['objects_distance']
-        _, self.next_object_index = params['closest_objects']
-        self.objects_left_of_center = params['objects_left_of_center']
-        self.is_left_of_center = params['is_left_of_center']
 
     # RewardEvaluator Class constructor
     def __init__(self, params):
@@ -343,7 +338,7 @@ class RewardEvaluator:
 
         except Exception as e:
             print("Error : " + str(e))
-            print(traceback.format_exc())
+            # print(traceback.format_exc())
 
 
         result_reward = result_reward * self.get_object_distances_reward()
