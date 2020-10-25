@@ -19,8 +19,8 @@ class RewardEvaluator:
     # parameters you are going to use for the Action space. Set MAX_SPEED equal to maximum speed defined there,
     # MIN_SPEED should be lower (just a bit) then expected minimum defined speed (e.g. Max speed set to 5 m/s,
     # speed granularity 3 => therefore, MIN_SPEED should be less than 1.66 m/s.
-    MAX_SPEED = float(1.0)
-    MIN_SPEED = float(0.3)
+    MAX_SPEED = float(2.0)
+    MIN_SPEED = float(0.6)
 
     # Define maximum steering angle according to the Action space settings. Smooth steering angle threshold is used to
     # set a steering angle still considered as "smooth". The value must be higher than minimum steering angle determined
@@ -32,10 +32,10 @@ class RewardEvaluator:
     # Constant value used to "ignore" turns in the corresponding distance (in meters). The car is supposed to drive
     # at MAX_SPEED (getting a higher reward). In case within the distance is a turn, the car is rewarded when slowing
     # down.
-    SAFE_HORIZON_DISTANCE = 0.01  # meters, able to fully stop. See ANGLE_IS_CURVE.
+    SAFE_HORIZON_DISTANCE = 0.2  # meters, able to fully stop. See ANGLE_IS_CURVE.
 
     # Constant to define accepted distance of the car from the center line.
-    CENTERLINE_FOLLOW_RATIO_TRESHOLD = 0.12
+    CENTERLINE_FOLLOW_RATIO_TRESHOLD = 0.24
 
     # Constant to define a threshold (in degrees), representing max. angle within SAFE_HORIZON_DISTANCE. If the car is
     # supposed to start steering and the angle of the farthest waypoint is above the threshold, the car is supposed to
@@ -91,9 +91,9 @@ class RewardEvaluator:
         for key, value in params.items():
             setattr(self, key, value)
 
-        _, self.next_object_index = params['closest_objects']
-        self.nearest_previous_waypoint_ind = params['closest_waypoints'][0]
-        self.nearest_next_waypoint_ind = params['closest_waypoints'][1]
+        _, self.next_object_index = params.get('closest_objects',[0,0])
+        self.nearest_previous_waypoint_ind = params.get('closest_waypoints',[0,0])[0]
+        self.nearest_next_waypoint_ind = params.get('closest_waypoints',[0,0])[1]
 
     # RewardEvaluator Class constructor
     def __init__(self, params):
