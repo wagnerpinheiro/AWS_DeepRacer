@@ -19,20 +19,20 @@ class RewardEvaluator:
     # parameters you are going to use for the Action space. Set MAX_SPEED equal to maximum speed defined there,
     # MIN_SPEED should be lower (just a bit) then expected minimum defined speed (e.g. Max speed set to 5 m/s,
     # speed granularity 3 => therefore, MIN_SPEED should be less than 1.66 m/s.
-    MAX_SPEED = float(2.0)
-    MIN_SPEED = float(0.6)
+    MAX_SPEED = float(6.0)
+    MIN_SPEED = float(0.7)
 
     # Define maximum steering angle according to the Action space settings. Smooth steering angle threshold is used to
     # set a steering angle still considered as "smooth". The value must be higher than minimum steering angle determined
     # by the steering Action space. E.g Max steering 30 degrees, granularity 3 => SMOOTH_STEERING_ANGLE_TRESHOLD should
     # be higher than 10 degrees.
     MAX_STEERING_ANGLE = 30
-    SMOOTH_STEERING_ANGLE_TRESHOLD = 10  # Greater than minimum angle defined in action space
+    SMOOTH_STEERING_ANGLE_TRESHOLD = 12  # Greater than minimum angle defined in action space
 
     # Constant value used to "ignore" turns in the corresponding distance (in meters). The car is supposed to drive
     # at MAX_SPEED (getting a higher reward). In case within the distance is a turn, the car is rewarded when slowing
     # down.
-    SAFE_HORIZON_DISTANCE = 0.2  # meters, able to fully stop. See ANGLE_IS_CURVE.
+    SAFE_HORIZON_DISTANCE = 0.8  # meters, able to fully stop. See ANGLE_IS_CURVE.
 
     # Constant to define accepted distance of the car from the center line.
     CENTERLINE_FOLLOW_RATIO_TRESHOLD = 0.24
